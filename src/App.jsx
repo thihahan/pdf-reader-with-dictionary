@@ -73,6 +73,23 @@ const App = () => {
         These sources serve as invaluable contributors to the richness and
         accuracy of the information we provide.
       </p>
+      <div className="flex items-center my-3 gap-3">
+        <label htmlFor="">Choose {pdfUrl && "another"} Pdf file :</label>
+        <input
+          type="file"
+          onChange={(e) => {
+            const file = e.target.files[0];
+            if (file.type == "application/pdf") {
+              setPdfUrl(URL.createObjectURL(file));
+              console.log(e.target.files[0]);
+              return;
+            }
+            alert("file must be pdf");
+            return;
+          }}
+          className="my-3"
+        />
+      </div>
       {pdfUrl && (
         <div>
           <button
@@ -83,25 +100,7 @@ const App = () => {
           </button>
         </div>
       )}
-      {!pdfUrl && (
-        <div className="flex flex-col">
-          <label htmlFor="">Choose Pdf file</label>
-          <input
-            type="file"
-            onChange={(e) => {
-              const file = e.target.files[0];
-              if (file.type == "application/pdf") {
-                setPdfUrl(URL.createObjectURL(file));
-                console.log(e.target.files[0]);
-                return;
-              }
-              alert("file must be pdf");
-              return;
-            }}
-            className="my-3"
-          />
-        </div>
-      )}
+
       {pdfUrl && (
         <div className="flex">
           <div className="flex-grow">
