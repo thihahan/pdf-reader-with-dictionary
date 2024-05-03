@@ -70,13 +70,13 @@ const App = () => {
         >
           DictionaryAPI
         </a>{" "}
-        . These sources serve as invaluable contributors to the richness and
-        accuracy of the information we provide
+        These sources serve as invaluable contributors to the richness and
+        accuracy of the information we provide.
       </p>
       {pdfUrl && (
         <div>
           <button
-            className="px-3 py-2 border rounded my-3"
+            className="px-3 bg-sky-600 text-white py-2 hover:bg-sky-700 transition-all duration-400 rounded my-3"
             onClick={() => setOpenDict((pre) => !pre)}
           >
             {openDict ? "Close" : "Open"} Dictionary
@@ -111,15 +111,18 @@ const App = () => {
                   type="text"
                   value={tempNum}
                   onChange={(e) => {
-                    setTempNum(Number(e.target.value));
+                    if (Number(e.target.value)) {
+                      setTempNum(Number(e.target.value));
+                    }
                   }}
                   onKeyUp={(e) => {
                     if (e.key == "Enter") {
                       let num = e.target.value;
-                      if (Number(num)) {
+                      if (Number(num) != null) {
                         num = Number(num);
                         if (num <= numPages) {
                           setPageNumber(num);
+                          return;
                         }
                       }
                     }
@@ -133,7 +136,6 @@ const App = () => {
                   value={scale}
                   onChange={(e) => setScale(e.target.value)}
                   type="range"
-                  width={"200px"}
                   max={500}
                   min={50}
                 />

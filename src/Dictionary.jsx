@@ -6,12 +6,15 @@ import { v4 } from "uuid";
 import Phonetic from "./components/Phonetic";
 const Dictionary = ({ open, setOpen, selectText, setSelectText }) => {
   const [words, setWords] = useState([]);
-
+  const [isLoading, setIsLoading] = useState(false);
   const fetchMeaning = async () => {
     if (selectText) {
+      setIsLoading(true);
       const res = await fetch(
         `https://api.dictionaryapi.dev/api/v2/entries/en/${selectText}`
       );
+      setIsLoading(false);
+
       if (res.ok) {
         const data = await res.json();
         setWords([...data, ...words]);
@@ -30,10 +33,11 @@ const Dictionary = ({ open, setOpen, selectText, setSelectText }) => {
       <Input
         type="text"
         value={selectText}
+        placeholder="search word or select text in pdf"
         fullWidth
         onChange={(e) => setSelectText(e.target.value)}
         endAdornment={
-          <IconButton onClick={() => fetchMeaning()}>
+          <IconButton onClick={() => !isLoading && fetchMeaning()}>
             <SearchIcon />
           </IconButton>
         }
@@ -54,8 +58,32 @@ const Dictionary = ({ open, setOpen, selectText, setSelectText }) => {
                       part of speech - {meaning?.partOfSpeech.toUpperCase()}
                     </h3>
                     {meaning?.definitions?.map((def) => {
-                      return <p className="my-1">- {def.definition}</p>;
+                      return (
+                        <>
+                          <p className="my-1">- {def.definition}</p>
+                        </>
+                      );
                     })}
+                    {meaning?.synonyms?.length > 0 && (
+                      <div className="flex flex-wrap gap-2 items-center my-2">
+                        <span className="text-lg font-bold">synonyms :</span>
+                        {meaning.synonyms?.map((syn) => (
+                          <span className="text-sm border p-1 px-2 rounded-full">
+                            {syn}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                    {meaning?.antonyms?.length > 0 && (
+                      <div className="flex flex-wrap gap-2 my-2 items-center">
+                        <span className="text-lg font-bold">antonyms :</span>
+                        {meaning.antonyms?.map((syn) => (
+                          <span className="text-sm border p-1 px-2 rounded-full">
+                            {syn}
+                          </span>
+                        ))}
+                      </div>
+                    )}
                   </>
                 );
               })}
