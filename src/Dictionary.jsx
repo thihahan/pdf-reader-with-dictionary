@@ -42,6 +42,7 @@ const Dictionary = ({ open, setOpen, selectText, setSelectText }) => {
           </IconButton>
         }
       />
+      {isLoading && <p className="my-2 text-lg">Loading ...</p>}
       {words.map((word) => {
         return (
           <div className="my-2">
