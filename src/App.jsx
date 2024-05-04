@@ -9,6 +9,7 @@ import {
 } from "@mui/icons-material";
 import TableOfContents from "./TableOfContents";
 import Dictionary from "./Dictionary";
+import Header from "./components/Header";
 
 const App = () => {
   const [numPages, setNumPages] = useState(null);
@@ -46,33 +47,7 @@ const App = () => {
   }, [pageNumber]);
   return (
     <div className="m-10">
-      <p>
-        Our dictionary API operates under the Creative Commons
-        Attribution-ShareAlike 3.0 License (CC BY-SA 3.0). You can find more
-        details about this license at{" "}
-        <a
-          className="underline text-blue-700 font-bold"
-          href="https://creativecommons.org/licenses/by-sa/3.0/"
-        >
-          Creative Commons
-        </a>
-        . We source our dictionary data from{" "}
-        <a
-          className="underline text-blue-700 font-bold"
-          href="https://en.wiktionary.org/wiki"
-        >
-          Wiktionary
-        </a>{" "}
-        and utilize the API provided by{" "}
-        <a
-          className="underline text-blue-700 font-bold"
-          href="https://api.dictionaryapi.dev/"
-        >
-          DictionaryAPI
-        </a>{" "}
-        These sources serve as invaluable contributors to the richness and
-        accuracy of the information we provide.
-      </p>
+      <Header />
       <div className="flex items-center my-3 gap-3">
         <label htmlFor="">Choose {pdfUrl && "another"} Pdf file :</label>
         <input
@@ -112,6 +87,8 @@ const App = () => {
                   onChange={(e) => {
                     if (Number(e.target.value)) {
                       setTempNum(Number(e.target.value));
+                    } else {
+                      setTempNum("");
                     }
                   }}
                   onKeyUp={(e) => {
