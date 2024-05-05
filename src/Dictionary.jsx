@@ -10,18 +10,25 @@ const Dictionary = ({ open, setOpen, selectText, setSelectText }) => {
   const fetchMeaning = async () => {
     if (selectText) {
       setIsLoading(true);
-      const res = await fetch(
-        `https://api.dictionaryapi.dev/api/v2/entries/en/${selectText}`
-      );
-      setIsLoading(false);
-
-      if (res.ok) {
-        const data = await res.json();
-        setWords([...data, ...words]);
-        return;
+      try {
+        const res = await fetch(
+          `https://api.dictionaryapi.dev/api/v2/entries/en/${selectText}`
+        );
+        console.log("finsh fetch");
+        setIsLoading(false);
+        if (res.ok) {
+          const data = await res.json();
+          console.log(data);
+          setWords([...data, ...words]);
+        } else {
+          const error = await res.json();
+          alert(error?.title);
+        }
+      } catch (e) {
+        alert("500 Internal Server Error");
+        console.log(e);
+        setIsLoading(false);
       }
-      const error = await res.json();
-      alert(error?.title);
     }
   };
   return (
