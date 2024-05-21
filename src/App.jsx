@@ -67,20 +67,22 @@ const App = () => {
   }, []);
 
   return (
-    <div className="mb-10 mt-20">
-      <Menu
-        pageNumber={menuPageNum}
-        numPages={numPages}
-        pdfUrl={pdfUrl}
-        setPageNumber={setMenuPageNum}
-        scale={scale}
-        setScale={setScale}
-        openDict={openDict}
-        setOpenDict={setOpenDict}
-        isTocShow={isTocShow}
-        setIsTocShow={setIsTocShow}
-        handlePageJump={handlePageJump}
-      />
+    <div className={`mb-10 ${pdfUrl && "mt-20"}`}>
+      {pdfUrl && (
+        <Menu
+          pageNumber={menuPageNum}
+          numPages={numPages}
+          pdfUrl={pdfUrl}
+          setPageNumber={setMenuPageNum}
+          scale={scale}
+          setScale={setScale}
+          openDict={openDict}
+          setOpenDict={setOpenDict}
+          isTocShow={isTocShow}
+          setIsTocShow={setIsTocShow}
+          handlePageJump={handlePageJump}
+        />
+      )}
 
       {pdfUrl && (
         <FlexboardProvider>
