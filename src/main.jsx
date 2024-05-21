@@ -8,6 +8,8 @@ import "@fontsource/roboto/700.css";
 import { pdfjs } from "react-pdf";
 import "./index.css";
 import { CssBaseline } from "@mui/material";
+import SelectTextProvider from "./Providers/SelectTextProvider.jsx";
+import Layout from "./Layout.jsx";
 
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
   "pdfjs-dist/build/pdf.worker.min.js",
@@ -15,8 +17,12 @@ pdfjs.GlobalWorkerOptions.workerSrc = new URL(
 ).toString();
 
 ReactDOM.createRoot(document.getElementById("root")).render(
-  <React.StrictMode>
-    <CssBaseline />
-    <App />
-  </React.StrictMode>
+  <>
+    <SelectTextProvider>
+      <CssBaseline />
+      <Layout>
+        <App />
+      </Layout>
+    </SelectTextProvider>
+  </>
 );

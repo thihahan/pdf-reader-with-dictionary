@@ -4,9 +4,11 @@ import { Search as SearchIcon } from "@mui/icons-material";
 
 import { v4 } from "uuid";
 import Phonetic from "./components/Phonetic";
-const Dictionary = ({ open, setOpen, selectText, setSelectText }) => {
+import { useSelectTextContext } from "./Providers/SelectTextProvider";
+const Dictionary = ({ open, setOpen }) => {
   const [words, setWords] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const { selectText, setSelectText } = useSelectTextContext();
   const fetchMeaning = async () => {
     if (selectText) {
       setIsLoading(true);
@@ -34,8 +36,8 @@ const Dictionary = ({ open, setOpen, selectText, setSelectText }) => {
   return (
     <div
       className={`${
-        !open && "hidden"
-      } transition-all duration-500 w-[400px] mx-5 mt-10`}
+        !open ? "translate-x-full" : "translate-x-0"
+      } transition-transform duration-500 w-[400px] mx-5 mt-10 fixed right-0 top-0 h-full bg-white shadow-lg p-5 overflow-y-auto`}
     >
       <Input
         type="text"

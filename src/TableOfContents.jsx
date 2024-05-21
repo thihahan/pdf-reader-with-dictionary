@@ -1,29 +1,45 @@
 import React, { useEffect, useState } from "react";
 import { pdfjs } from "react-pdf";
+import ContentItem from "./components/ContentItem";
 
-const TableOfContents = ({ pdfUrl }) => {
+const TableOfContents = ({ pdfUrl, handlePageJump }) => {
   const [tableOfContents, setTableOfContents] = useState([]);
   useEffect(() => {
     const extractTableOfContents = async () => {
       try {
         const pdf = await pdfjs.getDocument(pdfUrl).promise;
         const toc = [];
-        for (let i = 1; i <= pdf.numPages; i++) {
-          const page = await pdf.getPage(i);
-          const textContent = await page.getTextContent();
-          textContent.items.forEach((item) => {
-            const text = item.str.trim();
-            const fontSize = Math.sqrt(
-              item.transform[0] ** 2 + item.transform[1] ** 2
-            ); // Calculate font size based on transform matrix
-            if (fontSize > 20) {
-              // Example threshold for large font size
-              // Assume text item with large font size is a TOC entry
-              toc.push({ title: text, pageNumber: i });
-            }
-          });
+        await pdf.getOutline().then((outline) => {
+          if (outline) {
+            outline.forEach((item) => {
+              toc.push(item);
+              // You can recursively print sub-items if needed
+            });
+          } else {
+            console.log("No outline found");
+          }
+        });
+
+        async function modifyItem(item) {
+          const pgIndex = await pdf.getPageIndex(item.dest[0]);
+          return { ...item, pgNum: pgIndex + 1 };
         }
-        setTableOfContents(toc);
+
+        async function modifyItems(items) {
+          const result = await Promise.all(
+            items.map(async (item) => {
+              let items = [];
+              if (item.items.length > 0) {
+                items = await modifyItems(item.items);
+              }
+              const data = await modifyItem(item);
+              return { ...data, items };
+            })
+          );
+          return result;
+        }
+        const result = await modifyItems(toc);
+        setTableOfContents(result);
       } catch (e) {
         console.log("error : ", e);
       }
@@ -34,7 +50,21 @@ const TableOfContents = ({ pdfUrl }) => {
   useEffect(() => {
     console.log("table of contents", tableOfContents);
   }, [tableOfContents]);
-  return <div></div>;
+
+  return (
+    <div className={`px-3 h-dvh overflow-y-scroll`}>
+      {tableOfContents &&
+        tableOfContents.map((content) => {
+          return (
+            <ContentItem
+              handlePageJump={handlePageJump}
+              content={content}
+              padding={2}
+            />
+          );
+        })}
+    </div>
+  );
 };
 
 export default TableOfContents;

@@ -1,176 +1,158 @@
-import { IconButton, Input, TextField } from "@mui/material";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
+import { VariableSizeList as List } from "react-window";
 import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
-import {
-  ArrowForwardIos as NextIcon,
-  ArrowBackIosNew as BackIcon,
-} from "@mui/icons-material";
 import TableOfContents from "./TableOfContents";
 import Dictionary from "./Dictionary";
 import Header from "./components/Header";
+import InputBox from "./components/InputBox";
+import Menu from "./components/Menu";
+import { Drawer } from "@mui/material";
+import Sidebar from "./components/Sidebar";
+import {
+  Flexboard,
+  FlexboardProvider,
+  FlexboardFrame,
+  ResizerType,
+  Position,
+} from "@dorbus/flexboard";
 
 const App = () => {
   const [numPages, setNumPages] = useState(null);
   const [pdfUrl, setPdfUrl] = useState(null);
-  const [pageNumber, setPageNumber] = useState(1);
+  const [menuPageNum, setMenuPageNum] = useState(1);
   const [selectText, setSelectText] = useState("");
-  const [tempNum, setTempNum] = useState();
-  const [scale, setScale] = useState(100);
+  const [scale, setScale] = useState(1);
   const [openDict, setOpenDict] = useState(false);
+  const [pageHeight, setPageHeight] = useState(0);
+  const viewerRef = useRef();
+  const [isTocShow, setIsTocShow] = useState(false);
+  const previousVisibleStartIndex = useRef(-1);
+  const listRef = useRef();
   function onDocumentLoadSuccess({ numPages }) {
     setNumPages(numPages);
-    setTempNum(1);
   }
-  const documentRef = useRef();
 
-  useEffect(() => {
-    const handleSelection = () => {
-      const selection = window.getSelection();
-      const selectText = selection.toString().trim();
-      if (selectText) {
-        console.log("selectText : ", selectText);
-        setSelectText(selectText);
-      }
-    };
-    documentRef.current?.addEventListener("mouseup", handleSelection);
+  const handlePageJump = (pgNum) => {
+    const pgIndex = pgNum - 1;
+    if (pgNum > 0 && pgNum < numPages) {
+      listRef.current.scrollToItem(pgIndex, "start");
+      setMenuPageNum(pgNum);
+    }
+  };
 
-    // Clean up by removing the event listener when the component unmounts
-    return () => {
-      documentRef.current?.removeEventListener("mouseup", handleSelection);
-    };
-  });
-
-  useEffect(() => {
-    setTempNum(pageNumber);
-  }, [pageNumber]);
-  return (
-    <div className="m-10">
-      <Header />
-      <div className="flex items-center my-3 gap-3">
-        <label htmlFor="">Choose {pdfUrl && "another"} Pdf file :</label>
-        <input
-          type="file"
-          onChange={(e) => {
-            const file = e.target.files[0];
-            if (file.type == "application/pdf") {
-              setPdfUrl(URL.createObjectURL(file));
-              console.log(e.target.files[0]);
-              return;
-            }
-            alert("file must be pdf");
-            return;
-          }}
-          className="my-3"
-        />
-      </div>
-      {pdfUrl && (
-        <div>
-          <button
-            className="px-3 bg-sky-600 text-white py-2 hover:bg-sky-700 transition-all duration-400 rounded my-3"
-            onClick={() => setOpenDict((pre) => !pre)}
-          >
-            {openDict ? "Close" : "Open"} Dictionary
-          </button>
+  useEffect(() => {}, []);
+  const renderPage = useCallback(
+    ({ index, style }) => {
+      return (
+        <div style={style} className="">
+          <Page
+            pageNumber={index + 1}
+            className={`page_${index + 1}`}
+            scale={scale}
+          />
+          <hr className="my-1" />
         </div>
-      )}
+      );
+    },
+    [scale]
+  );
+
+  const onItemsRendered = useCallback(({ visibleStartIndex }) => {
+    if (previousVisibleStartIndex.current !== visibleStartIndex) {
+      previousVisibleStartIndex.current = visibleStartIndex;
+      setMenuPageNum(visibleStartIndex + 1);
+    }
+  }, []);
+
+  return (
+    <div className="mb-10 mt-20">
+      <Menu
+        pageNumber={menuPageNum}
+        numPages={numPages}
+        pdfUrl={pdfUrl}
+        setPageNumber={setMenuPageNum}
+        scale={scale}
+        setScale={setScale}
+        openDict={openDict}
+        setOpenDict={setOpenDict}
+        isTocShow={isTocShow}
+        setIsTocShow={setIsTocShow}
+        handlePageJump={handlePageJump}
+      />
 
       {pdfUrl && (
-        <div className="flex">
-          <div className="flex-grow">
-            <div className="flex justify-between">
-              <div className="flex border px-3 rounded">
-                <input
-                  type="text"
-                  value={tempNum}
-                  onChange={(e) => {
-                    if (Number(e.target.value)) {
-                      setTempNum(Number(e.target.value));
-                    } else {
-                      setTempNum("");
-                    }
-                  }}
-                  onKeyUp={(e) => {
-                    if (e.key == "Enter") {
-                      let num = e.target.value;
-                      if (Number(num) != null) {
-                        num = Number(num);
-                        if (num <= numPages) {
-                          setPageNumber(num);
-                          return;
-                        }
-                      }
-                    }
-                  }}
-                  className="border-r w-14 p-2 focus:outline-none"
-                />
-                <p className="p-2">of {numPages}</p>
-              </div>
-              <div>
-                <input
-                  value={scale}
-                  onChange={(e) => setScale(e.target.value)}
-                  type="range"
-                  max={500}
-                  min={50}
-                />
-              </div>
+        <FlexboardProvider>
+          <Flexboard
+            direction={Position.left}
+            draggable={true}
+            width={400}
+            minWidth={200}
+            maxWidth={300}
+            resizerStyle={{ backgroundColor: "gray" }}
+            resizerType={ResizerType.gutterlane}
+          >
+            <div>
+              {" "}
+              <TableOfContents
+                handlePageJump={handlePageJump}
+                pdfUrl={pdfUrl}
+              />
             </div>
-            <div className="relative flex justify-center border my-5">
+          </Flexboard>
+          <FlexboardFrame>
+            <div ref={viewerRef} className="overflow-y-scroll">
               <Document
-                inputRef={documentRef}
+                onItemClick={(props) => {
+                  const pgNum = props.pageNumber;
+                  if (pgNum) {
+                    listRef.current.scrollToItem(pgNum - 1, "start");
+                  }
+                  console.log(props.pageNumber);
+                }}
                 onLoadSuccess={onDocumentLoadSuccess}
                 file={pdfUrl}
+                className={""}
               >
-                <Page
-                  className="w-full"
-                  scale={scale / 100 || 1}
-                  pageNumber={pageNumber || 1}
-                />
+                {numPages && (
+                  <List
+                    ref={listRef}
+                    width={"100%"}
+                    height={viewerRef.current.clientWidth || 500}
+                    itemCount={numPages}
+                    estimatedItemSize={numPages}
+                    onItemsRendered={onItemsRendered}
+                    itemSize={() =>
+                      scale * (viewerRef?.current.clientHeight || 500)
+                    }
+                    className="overflow-x-scroll overflow-y-hidden"
+                  >
+                    {renderPage}
+                  </List>
+                )}
               </Document>
-              <IconButton
-                onClick={() => {
-                  if (pageNumber < numPages) {
-                    setPageNumber((pre) => pre + 1);
-                    setTempNum((pre) => pre + 1);
-                  }
-                }}
-                sx={{
-                  position: "absolute",
-                  zIndex: 1000,
-                  right: 10,
-                  top: "40%",
-                }}
-              >
-                <NextIcon />
-              </IconButton>
-              <IconButton
-                onClick={() => {
-                  if (pageNumber > 1) {
-                    setPageNumber((pre) => pre - 1);
-                    setTempNum((pre) => pre - 1);
-                  }
-                }}
-                sx={{
-                  position: "absolute",
-                  zIndex: 1000,
-                  left: 10,
-                  top: "40%",
-                }}
-              >
-                <BackIcon />
-              </IconButton>
+              <Dictionary
+                open={openDict}
+                selectText={selectText}
+                setSelectText={setSelectText}
+                setOpen={setOpenDict}
+              />
             </div>
-          </div>
-          <Dictionary
-            open={openDict}
-            selectText={selectText}
-            setSelectText={setSelectText}
-            setOpen={setOpenDict}
-          />
-        </div>
+          </FlexboardFrame>
+        </FlexboardProvider>
+        //<div className="container">
+        //   <Sidebar />
+        //   <div className="frame">
+        //
+        //   </div>
+        //
+        // </div>
       )}
+      <div className="mx-10">
+        <InputBox pdfUrl={pdfUrl} setPdfUrl={setPdfUrl} />
+      </div>
+      <Header />
     </div>
   );
 };

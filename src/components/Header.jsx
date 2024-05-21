@@ -1,6 +1,6 @@
 export default function Header() {
   return (
-    <p>
+    <p className="mx-3">
       Our dictionary API operates under the Creative Commons
       Attribution-ShareAlike 3.0 License (CC BY-SA 3.0). You can find more
       details about this license at{" "}
