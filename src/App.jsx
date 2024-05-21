@@ -78,7 +78,9 @@ const App = () => {
 
   useEffect(() => {
     if (listRef.current) {
+      const temp = menuPageNum;
       listRef.current.resetAfterIndex(0, true);
+      handlePageJump(temp);
     }
   }, [scale]);
 
