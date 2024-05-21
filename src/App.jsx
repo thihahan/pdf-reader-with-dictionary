@@ -25,11 +25,12 @@ const App = () => {
   const [selectText, setSelectText] = useState("");
   const [scale, setScale] = useState(1);
   const [openDict, setOpenDict] = useState(false);
-  const [pageHeight, setPageHeight] = useState(0);
+  const [viewerSize, setViewerSize] = useState({ width: 500, height: 500 });
   const viewerRef = useRef();
   const [isTocShow, setIsTocShow] = useState(false);
   const previousVisibleStartIndex = useRef(-1);
   const listRef = useRef();
+  const [pageHeight, setPageHeight] = useState(0);
   function onDocumentLoadSuccess({ numPages }) {
     setNumPages(numPages);
   }
@@ -42,7 +43,6 @@ const App = () => {
     }
   };
 
-  useEffect(() => {}, []);
   const renderPage = useCallback(
     ({ index, style }) => {
       return (
@@ -58,13 +58,29 @@ const App = () => {
     },
     [scale]
   );
-
   const onItemsRendered = useCallback(({ visibleStartIndex }) => {
     if (previousVisibleStartIndex.current !== visibleStartIndex) {
       previousVisibleStartIndex.current = visibleStartIndex;
       setMenuPageNum(visibleStartIndex + 1);
     }
   }, []);
+
+  useEffect(() => {
+    const loadPdf = async () => {
+      const newPdf = await pdfjs.getDocument(pdfUrl).promise;
+      const page = await newPdf.getPage(1);
+      const viewport = page.getViewport({ scale: 1 });
+      console.log("height : ", viewport.height);
+      setPageHeight(viewport.height);
+    };
+    loadPdf();
+  }, [pdfUrl]);
+
+  useEffect(() => {
+    if (listRef.current) {
+      listRef.current.resetAfterIndex(0, true);
+    }
+  }, [scale]);
 
   return (
     <div className={`mb-10 ${pdfUrl && "mt-20"}`}>
@@ -115,19 +131,17 @@ const App = () => {
                 }}
                 onLoadSuccess={onDocumentLoadSuccess}
                 file={pdfUrl}
-                className={""}
+                className={"h-full"}
               >
-                {numPages && (
+                {numPages && pageHeight > 0 && (
                   <List
                     ref={listRef}
                     width={"100%"}
-                    height={viewerRef.current.clientWidth || 500}
+                    height={pageHeight}
                     itemCount={numPages}
                     estimatedItemSize={numPages}
                     onItemsRendered={onItemsRendered}
-                    itemSize={() =>
-                      scale * (viewerRef?.current.clientHeight || 500)
-                    }
+                    itemSize={() => scale * pageHeight}
                     className="overflow-x-scroll overflow-y-hidden"
                   >
                     {renderPage}

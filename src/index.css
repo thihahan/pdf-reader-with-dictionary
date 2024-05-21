@@ -1,3 +1,14 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.react-pdf__Page__textContent {
+  color: black !important; /* or another visible color */
+}
+.react-pdf__Page__textContent {
+  z-index: 2;
+}
+
+.react-pdf__Page__canvas {
+  z-index: 1;
+}

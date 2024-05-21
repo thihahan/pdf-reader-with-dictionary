@@ -8,7 +8,7 @@ const ContentItem = ({ content, padding, handlePageJump }) => {
   const [showItems, setShowItems] = useState(false);
   return (
     <ul className={`list-disc`} style={{ paddingLeft: padding }}>
-      <div className="flex items-center border-b hover:bg-gray-100 px-3 py-1 cursor-pointer rounded">
+      <div className="flex items-center border-b hover:bg-gray-100 cursor-pointer rounded">
         {content.items.length > 0 && !showItems && (
           <IconButton onClick={() => setShowItems(true)}>
             <RightIcon />
@@ -24,7 +24,7 @@ const ContentItem = ({ content, padding, handlePageJump }) => {
             console.log(content);
             handlePageJump(content.pgNum);
           }}
-          className="flex-grow-1 w-full"
+          className="flex-grow-1 w-full px-3 py-1"
         >
           {content.title}
         </p>
